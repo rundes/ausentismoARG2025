@@ -103,7 +103,20 @@ b{font-weight:600}
 .foot{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--ink2)}
 .foot ul{margin:.6rem 0 .6rem 1.1rem}.foot li{margin:.3rem 0}
 .src{font-size:.78rem;color:var(--ink3);margin-top:1rem}
+.cmp-tbl{max-width:660px}
+.dt.cmp-tbl{border-collapse:collapse}.dt.cmp-tbl th{background:var(--ink);color:var(--paper);padding:.5rem .7rem;text-align:left;font-size:.78rem}.dt.cmp-tbl td{border-bottom:1px solid var(--rule);padding:.45rem .7rem;font-variant-numeric:tabular-nums}.dt.cmp-tbl td.up{color:var(--c-infractor);font-weight:700}
+.cmp-list{margin:1.1rem 0;display:grid;gap:.45rem}
+.cmp-head{display:grid;grid-template-columns:minmax(110px,1fr) 2.6fr auto;gap:.8rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+.cmp-row{display:grid;grid-template-columns:minmax(110px,1fr) 2.6fr auto;gap:.8rem;align-items:center}
+.cmp-name{font-size:.9rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmp-bars{display:grid;gap:3px}
+.cmp-b{height:16px;border-radius:4px;display:flex;align-items:center;padding-left:7px}
+.cmp-b>span{font-size:.68rem;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cmp-23{background:color-mix(in oklch,var(--c-masc) 55%,var(--paper))}.cmp-23>span{color:var(--ink)}
+.cmp-25{background:var(--c-infractor)}.cmp-25>span{color:var(--paper)}
+.cmp-d{font-weight:700;color:var(--c-infractor);font-variant-numeric:tabular-nums;font-size:.9rem;text-align:right}
 @media(max-width:720px){
+.cmp-row,.cmp-head{grid-template-columns:minmax(80px,1fr) 2fr auto;gap:.5rem}.cmp-b>span{font-size:.64rem}
 .kf{grid-template-columns:repeat(2,1fr)}.kf>div:nth-child(2){border-right:0}.kf>div:nth-child(1),.kf>div:nth-child(2){border-bottom:1px solid var(--rule)}
 .prov-grid{grid-template-columns:1fr}
 .rl-row,.rl-head{grid-template-columns:minmax(88px,1fr) 2fr;gap:.5rem}.rl-aus>span,.rl-inf>span{font-size:.7rem}
@@ -188,7 +201,44 @@ b{font-weight:600}
 </div>
 <p class='rl-note'><span class='sw' style='background:color-mix(in oklch,var(--c-exento) 38%,var(--paper))'></span><i>Ausentismo total</i> &nbsp; <span class='sw' style='background:var(--c-infractor)'></span><i>Infraccion efectiva</i>. El Centro y el Litoral encabezan la ausencia (Corrientes 39,3%, Misiones 37,8%); el NOA la cierra (Tucuman 20,3%, la mayor participacion del pais).</p>
 
-<h2><span class='h2n'>04</span>Provincia por provincia</h2>
+<h2><span class='h2n'>04</span>Como cambio respecto de 2023</h2>
+<p class='lede'>La general de 2023 fue presidencial; la de 2025, legislativa de medio termino. El contraste mide el efecto del tipo de eleccion sobre la participacion.</p>
+<table class='dt cmp-tbl'><thead><tr><th>Indicador</th><th>Generales 2023</th><th>Legislativas 2025</th><th>Variacion</th></tr></thead><tbody>
+<tr><td>Ausentismo</td><td>21,2% (7,60 M)</td><td>30,9% (11,29 M)</td><td class='up'>+9,7 pts</td></tr>
+<tr><td>Infraccion efectiva</td><td>13,5% (4,84 M)</td><td>21,2% (7,75 M)</td><td class='up'>+7,7 pts</td></tr>
+<tr><td>Padron habilitado</td><td>35,78 M</td><td>36,48 M</td><td>+0,70 M</td></tr>
+</tbody></table>
+<p>El ausentismo crecio en las 24 provincias sin excepcion. La general presidencial de 2023 movilizo mucho mas que la legislativa de 2025: la diferencia de casi diez puntos es el costo de participacion de una eleccion de medio termino.</p>
+<div class='cmp-list'><div class='cmp-head'><div>Provincia</div><div>Tasa de ausentismo: 2023 frente a 2025</div><div>&Delta;</div></div>
+<div class='cmp-row'><div class='cmp-name'>Buenos Aires</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:47.1%'><span>19,8% &middot;23</span></div><div class='cmp-b cmp-25' style='width:73.6%'><span>30,9% &middot;25</span></div></div><div class='cmp-d'>+11,1</div></div>
+<div class='cmp-row'><div class='cmp-name'>Capital Federal</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:54%'><span>22,7% &middot;23</span></div><div class='cmp-b cmp-25' style='width:71%'><span>29,8% &middot;25</span></div></div><div class='cmp-d'>+7,1</div></div>
+<div class='cmp-row'><div class='cmp-name'>Catamarca</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:53.1%'><span>22,3% &middot;23</span></div><div class='cmp-b cmp-25' style='width:74%'><span>31,1% &middot;25</span></div></div><div class='cmp-d'>+8,8</div></div>
+<div class='cmp-row'><div class='cmp-name'>Chaco</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:61.9%'><span>26,0% &middot;23</span></div><div class='cmp-b cmp-25' style='width:81.7%'><span>34,3% &middot;25</span></div></div><div class='cmp-d'>+8,3</div></div>
+<div class='cmp-row'><div class='cmp-name'>Chubut</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:58.3%'><span>24,5% &middot;23</span></div><div class='cmp-b cmp-25' style='width:70.7%'><span>29,7% &middot;25</span></div></div><div class='cmp-d'>+5,2</div></div>
+<div class='cmp-row'><div class='cmp-name'>Cordoba</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:54%'><span>22,7% &middot;23</span></div><div class='cmp-b cmp-25' style='width:81.2%'><span>34,1% &middot;25</span></div></div><div class='cmp-d'>+11,4</div></div>
+<div class='cmp-row'><div class='cmp-name'>Corrientes</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:49.8%'><span>20,9% &middot;23</span></div><div class='cmp-b cmp-25' style='width:93.6%'><span>39,3% &middot;25</span></div></div><div class='cmp-d'>+18,4</div></div>
+<div class='cmp-row'><div class='cmp-name'>Entre Rios</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:49.5%'><span>20,8% &middot;23</span></div><div class='cmp-b cmp-25' style='width:69%'><span>29,0% &middot;25</span></div></div><div class='cmp-d'>+8,2</div></div>
+<div class='cmp-row'><div class='cmp-name'>Formosa</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:55%'><span>23,1% &middot;23</span></div><div class='cmp-b cmp-25' style='width:75.7%'><span>31,8% &middot;25</span></div></div><div class='cmp-d'>+8,7</div></div>
+<div class='cmp-row'><div class='cmp-name'>Jujuy</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:49.3%'><span>20,7% &middot;23</span></div><div class='cmp-b cmp-25' style='width:69.8%'><span>29,3% &middot;25</span></div></div><div class='cmp-d'>+8,6</div></div>
+<div class='cmp-row'><div class='cmp-name'>La Pampa</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:50.2%'><span>21,1% &middot;23</span></div><div class='cmp-b cmp-25' style='width:75%'><span>31,5% &middot;25</span></div></div><div class='cmp-d'>+10,4</div></div>
+<div class='cmp-row'><div class='cmp-name'>La Rioja</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:44.5%'><span>18,7% &middot;23</span></div><div class='cmp-b cmp-25' style='width:71.4%'><span>30,0% &middot;25</span></div></div><div class='cmp-d'>+11,3</div></div>
+<div class='cmp-row'><div class='cmp-name'>Mendoza</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:52.9%'><span>22,2% &middot;23</span></div><div class='cmp-b cmp-25' style='width:70.7%'><span>29,7% &middot;25</span></div></div><div class='cmp-d'>+7,5</div></div>
+<div class='cmp-row'><div class='cmp-name'>Misiones</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:55.2%'><span>23,2% &middot;23</span></div><div class='cmp-b cmp-25' style='width:90%'><span>37,8% &middot;25</span></div></div><div class='cmp-d'>+14,6</div></div>
+<div class='cmp-row'><div class='cmp-name'>Neuquen</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:45.5%'><span>19,1% &middot;23</span></div><div class='cmp-b cmp-25' style='width:58.8%'><span>24,7% &middot;25</span></div></div><div class='cmp-d'>+5,6</div></div>
+<div class='cmp-row'><div class='cmp-name'>Rio Negro</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:51.4%'><span>21,6% &middot;23</span></div><div class='cmp-b cmp-25' style='width:71.4%'><span>30,0% &middot;25</span></div></div><div class='cmp-d'>+8,4</div></div>
+<div class='cmp-row'><div class='cmp-name'>Salta</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:56%'><span>23,5% &middot;23</span></div><div class='cmp-b cmp-25' style='width:75.7%'><span>31,8% &middot;25</span></div></div><div class='cmp-d'>+8,3</div></div>
+<div class='cmp-row'><div class='cmp-name'>San Juan</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:63.3%'><span>26,6% &middot;23</span></div><div class='cmp-b cmp-25' style='width:66.7%'><span>28,0% &middot;25</span></div></div><div class='cmp-d'>+1,4</div></div>
+<div class='cmp-row'><div class='cmp-name'>San Luis</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:48.6%'><span>20,4% &middot;23</span></div><div class='cmp-b cmp-25' style='width:84.3%'><span>35,4% &middot;25</span></div></div><div class='cmp-d'>+15,0</div></div>
+<div class='cmp-row'><div class='cmp-name'>Santa Cruz</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:64.5%'><span>27,1% &middot;23</span></div><div class='cmp-b cmp-25' style='width:83.6%'><span>35,1% &middot;25</span></div></div><div class='cmp-d'>+8,0</div></div>
+<div class='cmp-row'><div class='cmp-name'>Santa Fe</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:60%'><span>25,2% &middot;23</span></div><div class='cmp-b cmp-25' style='width:86.4%'><span>36,3% &middot;25</span></div></div><div class='cmp-d'>+11,1</div></div>
+<div class='cmp-row'><div class='cmp-name'>Santiago del Estero</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:47.9%'><span>20,1% &middot;23</span></div><div class='cmp-b cmp-25' style='width:61.4%'><span>25,8% &middot;25</span></div></div><div class='cmp-d'>+5,7</div></div>
+<div class='cmp-row'><div class='cmp-name'>Tierra del Fuego</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:60.2%'><span>25,3% &middot;23</span></div><div class='cmp-b cmp-25' style='width:69.8%'><span>29,3% &middot;25</span></div></div><div class='cmp-d'>+4,0</div></div>
+<div class='cmp-row'><div class='cmp-name'>Tucuman</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:39.8%'><span>16,7% &middot;23</span></div><div class='cmp-b cmp-25' style='width:48.3%'><span>20,3% &middot;25</span></div></div><div class='cmp-d'>+3,6</div></div>
+
+</div>
+<p class='rl-note'><span class='sw' style='background:color-mix(in oklch,var(--c-masc) 55%,var(--paper))'></span><i>2023</i> &nbsp; <span class='sw' style='background:var(--c-infractor)'></span><i>2025</i>. La suba fue mayor en el Litoral (Corrientes +18,4, Misiones +14,6) y menor en el NOA (Tucuman +3,6, Santiago del Estero +6,8).</p>
+
+<h2><span class='h2n'>05</span>Provincia por provincia</h2>
 <p class='lede'>Cada ficha: composicion legal de los ausentes, distribucion por edad, sexo de los infractores y los departamentos con mas infractores junto a su tasa local. En orden alfabetico.</p>
 <article class='prov'>
 <header class='prov-h'><span class='prov-rk'>01</span><h3>Buenos Aires</h3><div class='prov-tasa'><b style='color:oklch(0.58 0.15 45)'>30,91%</b><span>ausentismo</span></div></header>
