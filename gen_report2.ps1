@@ -202,7 +202,7 @@ foreach($row in $prov){
   $cmpRows+="<div class='cmp-row'><div class='cmp-name'>$nm</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:$w23%'><span>$t23s% gen&middot;23</span></div><div class='cmp-b cmp-bal' style='width:$wb%'><span>$tbs% bal&middot;23</span></div><div class='cmp-b cmp-25' style='width:$w25%'><span>$t25s% &middot;25</span></div></div><div class='cmp-d'>$ds</div></div>`n"
 }
 
-# ===== totales 4 anios por provincia (cod distrito: nombre|aus2017|aus2019 PASO) =====
+# ===== totales 4 años por provincia (cod distrito: nombre|aus2017|aus2019 PASO) =====
 $h1719raw = @'
 Capital Federal|629446|590846
 Buenos Aires|2662066|2553278
@@ -257,7 +257,16 @@ Tucuman|1217207
 Tierra del Fuego|132924
 '@ -split "`n" | Where-Object { $_.Trim() }
 $elec=@{}; foreach($l in $elecRaw){ $x=$l.Split('|'); $elec[(Norm $x[0])]=$x[1] }
-function TC($t,$n){ "<td class='tc'><b>$($t.ToString('0.0').Replace('.',','))%</b><span>$(F $n)</span></td>" }
+function Arrow($t,$pt,$prevLabel){
+  if($null -eq $pt){ return '' }
+  $d=[math]::Round($t-$pt,1)
+  if($d -gt 0){ $cls='up';$g='&#9650;' } elseif($d -lt 0){ $cls='down';$g='&#9660;' } else { return '' }
+  $ds=([math]::Abs($d)).ToString('0.0').Replace('.',',')
+  $verb= if($d -gt 0){'Crecio'} else {'Bajo'}
+  $tip="$verb $ds pp respecto de $prevLabel"
+  "<i class='trend $cls' tabindex='0' title='$tip' data-tip='$tip'>$g$ds</i>"
+}
+function TC($t,$n,$pt,$prevLabel){ "<td class='tc'><span class='tcl'><b>$($t.ToString('0.0').Replace('.',','))%</b>$(Arrow $t $pt $prevLabel)</span><span class='tcn'>$(F $n)</span></td>" }
 $totRows=''; $s17=0;$s19=0;$s23=0;$s25=0;$e19=0;$p23s=0;$p25s=0
 foreach($row in $prov){
   $c=$row.Split('|'); $nm=$c[0]; $k=Norm $nm
@@ -265,10 +274,10 @@ foreach($row in $prov){
   $el=[double]$elec[$k]; $p23=[double]$cmp23[$k][0]; $p25=[double]$c[1]
   $t17=[math]::Round(100*$a17/$el,1); $t19=[math]::Round(100*$a19/$el,1); $t23=[math]::Round(100*$a23/$p23,1); $t25=[math]::Round(100*$a25/$p25,1)
   $s17+=$a17;$s19+=$a19;$s23+=$a23;$s25+=$a25;$e19+=$el;$p23s+=$p23;$p25s+=$p25
-  $totRows+="<tr><td class='lt-d'>$nm</td>$(TC $t17 $a17)$(TC $t19 $a19)$(TC $t23 $a23)$(TC $t25 $a25)</tr>`n"
+  $totRows+="<tr><td class='lt-d'>$nm</td>$(TC $t17 $a17 $null '')$(TC $t19 $a19 $t17 'PASO 2017')$(TC $t23 $a23 $t19 'PASO 2019')$(TC $t25 $a25 $t23 'Generales 2023')</tr>`n"
 }
 $T17=[math]::Round(100*$s17/$e19,1);$T19=[math]::Round(100*$s19/$e19,1);$T23=[math]::Round(100*$s23/$p23s,1);$T25=[math]::Round(100*$s25/$p25s,1)
-$totNat="<tr class='tot'><td>TOTAL PAIS</td>$(TC $T17 $s17)$(TC $T19 $s19)$(TC $T23 $s23)$(TC $T25 $s25)</tr>"
+$totNat="<tr class='tot'><td>TOTAL PAIS</td>$(TC $T17 $s17 $null '')$(TC $T19 $s19 $T17 'PASO 2017')$(TC $T23 $s23 $T19 'PASO 2019')$(TC $T25 $s25 $T23 'Generales 2023')</tr>"
 
 # ===== comparacion edad 2023 vs 2025 =====
 $age25aus=@(604166,1614346,2457547,2394935,1359613,1001813,1845349)
@@ -280,7 +289,7 @@ for($i=0;$i -lt 7;$i++){
   $w23=[math]::Round(100*$a23/$aMax,1); $w25=[math]::Round(100*$a25/$aMax,1)
   $g=[math]::Round(100*($a25-$a23)/$a23,0)
   $m23=('{0:0.00}' -f ($a23/1e6)).Replace('.',','); $m25=('{0:0.00}' -f ($a25/1e6)).Replace('.',',')
-  $ageCmpRows+="<div class='cmp-row'><div class='cmp-name'>$($ageLabels[$i]) anios</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:$w23%'><span>$m23 M &middot;23</span></div><div class='cmp-b cmp-25' style='width:$w25%'><span>$m25 M &middot;25</span></div></div><div class='cmp-d'>+$g%</div></div>`n"
+  $ageCmpRows+="<div class='cmp-row'><div class='cmp-name'>$($ageLabels[$i]) años</div><div class='cmp-bars'><div class='cmp-b cmp-23' style='width:$w23%'><span>$m23 M &middot;23</span></div><div class='cmp-b cmp-25' style='width:$w25%'><span>$m25 M &middot;25</span></div></div><div class='cmp-d'>+$g%</div></div>`n"
 }
 
 # ===== national age pyramid =====
@@ -318,7 +327,7 @@ foreach($row in $prov){ $rank++
   }
   $tauC=$tau.Replace('.',','); $tinC=$tin.Replace('.',',')
   $cards += @"
-<article class='prov'>
+<article class='prov exp' data-kind='card' data-title='Ficha provincial - $nm'>
 <header class='prov-h'><span class='prov-rk'>$('{0:D2}' -f $rank)</span><h3>$nm</h3><div class='prov-tasa'><b style='color:$sev'>$tauC%</b><span>ausentismo</span></div></header>
 <div class='prov-fig'><div><b>$(F $pad)</b><span>padron</span></div><div><b>$(F $au)</b><span>ausentes</span></div><div><b style='color:var(--c-infractor)'>$(F $inf)</b><span>infractores</span></div><div><b>$tinC%</b><span>tasa infraccion</span></div></div>
 <div class='cap'>Composicion de los ausentes</div>
@@ -448,6 +457,50 @@ $ls+="<polyline points='$($lx[2]),$(LY 13.9) $($lx[3]),$(LY 22.1)' fill='none' s
 foreach($p in @(@(2,13.9),@(3,22.1))){ $vy=LY $p[1]; $vs=([double]$p[1]).ToString('0.0').Replace('.',','); $ls+="<circle cx='$($lx[$p[0]])' cy='$vy' r='4' fill='oklch(0.56 0.16 32)'/><text x='$($lx[$p[0]])' y='$($vy+15)' text-anchor='middle' font-size='11' font-weight='700' fill='oklch(0.56 0.16 32)'>$vs%</text>" }
 for($i=0;$i -lt 4;$i++){ $ls+="<text x='$($lx[$i])' y='216' text-anchor='middle' font-size='11' font-weight='700' fill='oklch(0.26 0.02 60)'>$($xlab[$i][0])</text><text x='$($lx[$i])' y='230' text-anchor='middle' font-size='9' fill='oklch(0.62 0.012 70)'>$($xlab[$i][1])</text>" }
 $lineSvg=$ls+"</svg>"
+# data-csv para la linea de tendencia (JSON de filas)
+$lineCsvRows=@('["Eleccion","Ausentismo %","Infraccion %"]')
+for($i=0;$i -lt 4;$i++){
+  $el="$($xlab[$i][1]) $($xlab[$i][0])"
+  $av=$au[$i].ToString('0.0').Replace('.',',')
+  $iv= if($null -eq $inf[$i]){''} else { ([double]$inf[$i]).ToString('0.0').Replace('.',',') }
+  $lineCsvRows+=("[""$el"",""$av"",""$iv""]")
+}
+$lineCsv='['+($lineCsvRows -join ',')+']'
+
+# ===== JS de exportacion (datos CSV + imagen PNG por elemento .exp) =====
+$exportJs = @'
+<script>
+(function(){
+  var H=null;
+  function lib(){return H||(H=new Promise(function(res,rej){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js';s.onload=function(){res(window.htmlToImage)};s.onerror=function(){rej(new Error('cdn'))};document.head.appendChild(s)}))}
+  function txt(n){return n?n.textContent.replace(/\s+/g,' ').trim():''}
+  function slug(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||'export'}
+  function save(name,blob){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1500)}
+  function csvCell(s){s=(s==null?'':String(s));return /[";\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+  function toCsv(rows){return '﻿'+rows.map(function(r){return r.map(csvCell).join(';')}).join('\r\n')}
+  var EX={
+    table:function(el){var t=el.querySelector('table');var out=[];Array.prototype.forEach.call(t.rows,function(r){out.push(Array.prototype.map.call(r.cells,txt))});return out},
+    tottbl:function(el){var t=el.querySelector('table');var h=Array.prototype.map.call(t.tHead.rows[0].cells,txt);var Hd=['Provincia'];for(var i=1;i<h.length;i++){Hd.push(h[i]+' tasa%');Hd.push(h[i]+' no votantes')}var out=[Hd];Array.prototype.forEach.call(t.tBodies,function(tb){Array.prototype.forEach.call(tb.rows,function(r){var o=[txt(r.cells[0])];for(var j=1;j<r.cells.length;j++){var c=r.cells[j];o.push(txt(c.querySelector('b')));o.push(txt(c.querySelector('.tcn')))}out.push(o)})});return out},
+    comp:function(el){var out=[['Categoria','Personas','Detalle']];el.querySelectorAll('.complegend>div').forEach(function(d){var inner=d.querySelector('div');var num=txt(inner.querySelector('b'));var small=txt(inner.querySelector('small'));var label=txt(inner).replace(num,'').replace(small,'').trim();out.push([label,num,small])});return out},
+    pyramid:function(el){var out=[['Edad','Mujeres','Varones']];el.querySelectorAll('.py-row').forEach(function(r){out.push([txt(r.querySelector('.py-lab')),txt(r.querySelector('.py-fnum')),txt(r.querySelector('.py-mnum'))])});return out},
+    ranking:function(el){var out=[['Provincia','Ausentismo','Infraccion efectiva']];el.querySelectorAll('.rl-row').forEach(function(r){out.push([txt(r.querySelector('.rl-name')).replace(/^\d+\s*/,''),txt(r.querySelector('.rl-aus span')),txt(r.querySelector('.rl-inf span'))])});return out},
+    cmplist:function(el){var hs=[];el.querySelectorAll('.cmp-head>div').forEach(function(d){hs.push(txt(d))});var out=[hs];el.querySelectorAll('.cmp-row').forEach(function(r){var row=[txt(r.querySelector('.cmp-name'))];r.querySelectorAll('.cmp-b span').forEach(function(s){row.push(txt(s))});row.push(txt(r.querySelector('.cmp-d')));out.push(row)});return out},
+    map:function(el){var out=[['Provincia','Tasa ausentismo']];el.querySelectorAll('title').forEach(function(t){var p=txt(t).split(':');if(p.length>=2)out.push([p[0].trim(),p.slice(1).join(':').trim()])});return out},
+    card:function(el){return EX.table(el)},
+    attr:function(el){return JSON.parse(el.getAttribute('data-csv'))}
+  };
+  function doCsv(el){var kind=el.getAttribute('data-kind');var title=el.getAttribute('data-title')||'datos';try{var rows=EX[kind](el);save(slug(title)+'.csv',new Blob([toCsv(rows)],{type:'text/csv;charset=utf-8'}))}catch(e){console.error(e);alert('No se pudieron extraer los datos de este elemento')}}
+  function doPng(el,btn){var title=el.getAttribute('data-title')||'grafico';btn.disabled=true;var old=btn.textContent;btn.textContent='...';var paper=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()||'#fff';lib().then(function(h){return h.toBlob(el,{pixelRatio:2,backgroundColor:paper,filter:function(n){return !(n.classList&&n.classList.contains('exp-tools'))}})}).then(function(b){save(slug(title)+'.png',b)}).catch(function(e){console.error(e);alert('No se pudo generar la imagen (revisa la conexion)')}).then(function(){btn.disabled=false;btn.textContent=old})}
+  document.querySelectorAll('.exp').forEach(function(el){
+    if(el.querySelector(':scope>.exp-tools'))return;
+    var bar=document.createElement('div');bar.className='exp-tools';
+    var bc=document.createElement('button');bc.type='button';bc.textContent='datos';bc.title='Descargar datos (CSV)';bc.addEventListener('click',function(){doCsv(el)});
+    var bp=document.createElement('button');bp.type='button';bp.textContent='imagen';bp.title='Descargar imagen (PNG)';bp.addEventListener('click',function(){doPng(el,bp)});
+    bar.appendChild(bc);bar.appendChild(bp);el.insertBefore(bar,el.firstChild);
+  });
+})();
+</script>
+'@
 
 $html = @"
 <!DOCTYPE html><html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
@@ -458,7 +511,7 @@ $html = @"
 <style>
 :root{
 --paper:oklch(0.99 0.005 85);--paper2:oklch(0.975 0.006 80);--ink:oklch(0.26 0.02 60);--ink2:oklch(0.46 0.015 65);--ink3:oklch(0.62 0.012 70);--rule:oklch(0.9 0.008 75);--rule2:oklch(0.94 0.006 78);
---c-infractor:oklch(0.56 0.16 32);--c-exento:oklch(0.62 0.085 230);--c-justif:oklch(0.74 0.11 78);--c-otros:oklch(0.74 0.02 80);--c-fem:oklch(0.64 0.13 8);--c-masc:oklch(0.56 0.085 245);
+--c-infractor:oklch(0.56 0.16 32);--c-exento:oklch(0.62 0.085 230);--c-justif:oklch(0.74 0.11 78);--c-otros:oklch(0.74 0.02 80);--c-fem:oklch(0.64 0.13 8);--c-masc:oklch(0.56 0.085 245);--c-up:oklch(0.55 0.17 28);--c-down:oklch(0.52 0.13 150);
 --maxw:1040px}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
@@ -555,15 +608,19 @@ b{font-weight:600}
 .foot{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--ink2)}
 .foot ul{margin:.6rem 0 .6rem 1.1rem}.foot li{margin:.3rem 0}
 .src{font-size:.78rem;color:var(--ink3);margin-top:1rem}
-.tot-wrap{overflow-x:auto;margin:1rem 0}
-.dt.tot-tbl{min-width:560px;border-collapse:collapse}
+.tot-wrap,.tbl-wrap{overflow-x:auto;margin:1rem 0}
+.dt.tot-tbl{min-width:560px;border-collapse:collapse;margin-inline:auto}
 .dt.tot-tbl th{background:var(--ink);color:var(--paper);padding:.5rem .7rem;text-align:left;font-size:.76rem}
 .dt.tot-tbl th:nth-child(n+2){text-align:right}
 .dt.tot-tbl td{border-bottom:1px solid var(--rule);padding:.4rem .7rem;font-size:.84rem}
 .dt.tot-tbl .tn{text-align:right;font-variant-numeric:tabular-nums}
 .dt.tot-tbl .lt-d{white-space:nowrap}
 .dt.tot-tbl .tot td{background:var(--paper2);font-weight:700;border-top:2px solid var(--ink)}
-.dt.tot-tbl .tc{text-align:right;white-space:nowrap}.dt.tot-tbl .tc b{font-variant-numeric:tabular-nums}.dt.tot-tbl .tc span{display:block;font-size:.71rem;color:var(--ink3);font-variant-numeric:tabular-nums;font-weight:400}
+.dt.tot-tbl .tc{text-align:right;white-space:nowrap;position:relative}.dt.tot-tbl .tc b{font-variant-numeric:tabular-nums}.dt.tot-tbl .tc .tcn{display:block;font-size:.71rem;color:var(--ink3);font-variant-numeric:tabular-nums;font-weight:400}
+.dt.tot-tbl .tcl{display:inline-flex;align-items:baseline;justify-content:flex-end;gap:.25rem}
+.trend{font-style:normal;font-size:.64rem;font-weight:700;font-variant-numeric:tabular-nums;cursor:default;outline:none}
+.trend.up{color:var(--c-up)}.trend.down{color:var(--c-down)}
+.trend[data-tip]:hover::after,.trend[data-tip]:focus::after{content:attr(data-tip);position:absolute;top:130%;right:.4rem;background:var(--ink);color:var(--paper);font-size:.7rem;font-weight:400;letter-spacing:0;padding:.32rem .55rem;border-radius:6px;white-space:nowrap;z-index:8;box-shadow:0 6px 16px oklch(0 0 0/.2);pointer-events:none}
 .linewrap{margin:.8rem 0;max-width:580px}.linewrap svg{width:100%;height:auto}
 .linelegend{display:flex;gap:1.4rem;font-size:.85rem;margin:.3rem 0 0}
 .linelegend i{display:inline-block;width:20px;height:0;border-top:3px solid;vertical-align:middle;margin-right:.4rem}
@@ -574,7 +631,7 @@ b{font-weight:600}
 .mapleg{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.78rem;margin:.6rem 0;color:var(--ink2)}
 .mapleg span{display:flex;align-items:center;gap:.35rem}.mapleg i{width:.85rem;height:.85rem;border-radius:2px;display:inline-block;border:1px solid oklch(0.85 0.01 70)}
 @media(max-width:720px){.maps{grid-template-columns:repeat(2,1fr)}}
-.cmp-tbl{max-width:660px}
+.dt.cmp-tbl{max-width:660px;width:100%;min-width:460px;margin-inline:auto}
 .dt.cmp-tbl{border-collapse:collapse}.dt.cmp-tbl th{background:var(--ink);color:var(--paper);padding:.5rem .7rem;text-align:left;font-size:.78rem}.dt.cmp-tbl td{border-bottom:1px solid var(--rule);padding:.45rem .7rem;font-variant-numeric:tabular-nums}.dt.cmp-tbl td.up{color:var(--c-infractor);font-weight:700}
 .cmp-list{margin:1.1rem 0;display:grid;gap:.45rem}
 .cmp-head{display:grid;grid-template-columns:minmax(110px,1fr) 2.6fr auto;gap:.8rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
@@ -596,7 +653,15 @@ b{font-weight:600}
 .py-row,.py-head{grid-template-columns:minmax(44px,1fr) 3fr auto 3fr minmax(44px,1fr);gap:.3rem;font-size:.78rem}
 .lt .lt-d{max-width:8rem}
 }
-@media print{body{font-size:11px}.prov{box-shadow:none}.cover{padding-top:0}a{color:inherit}}
+@media print{body{font-size:11px}.prov{box-shadow:none}.cover{padding-top:0}a{color:inherit}.exp-tools{display:none}}
+.exp{position:relative}
+.exp-tools{position:absolute;top:.35rem;right:.35rem;display:flex;gap:.3rem;opacity:0;transition:opacity .18s cubic-bezier(.22,1,.36,1);z-index:7}
+.exp:hover>.exp-tools,.exp:focus-within>.exp-tools{opacity:1}
+.exp-tools button{font-family:inherit;font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);background:color-mix(in oklch,var(--paper) 88%,transparent);backdrop-filter:blur(3px);border:1px solid var(--rule);border-radius:6px;padding:.24rem .5rem;cursor:pointer;line-height:1.1}
+.exp-tools button:hover{color:var(--paper);background:var(--ink);border-color:var(--ink)}
+.exp-tools button:disabled{opacity:.5;cursor:progress}
+@media(max-width:720px){.exp-tools{opacity:.55}}
+.prov.exp>.exp-tools{top:.5rem;right:.5rem}
 </style></head>
 <body><div class='wrap'>
 
@@ -617,63 +682,67 @@ b{font-weight:600}
 
 <h2><span class='h2n'>01</span>Como se compone el ausentismo</h2>
 <p class='lede'>Los 11.288.010 ausentes, clasificados segun su situacion legal.</p>
+<div class='exp' data-title='Composicion del ausentismo 2025' data-kind='comp'>
 <div class='bigcomp'><div class='bc-i' style='width:71.4%'>Infractores 71,4%</div><div class='bc-e' style='width:26.7%'>Exentos 26,7%</div><div class='bc-o' style='width:1.9%'></div></div>
 <div class='complegend'>
 <div><span class='tag' style='background:var(--c-infractor)'></span><div><b>8.061.870</b> Infractores <small>obligados sin justificacion (incluye pago de multa, CUE anulado y sin clasificar), 22,1% del padron</small></div></div>
 <div><span class='tag' style='background:var(--c-exento)'></span><div><b>3.015.385</b> Exentos por edad <small>menores de 18 y mayores de 70</small></div></div>
 <div><span class='tag' style='background:var(--c-justif)'></span><div><b>210.755</b> Justificados <small>distancia, salud, laboral, exterior</small></div></div>
-</div>
+</div></div>
 
 <h2><span class='h2n'>02</span>Edad y sexo</h2>
 <p class='lede'>Ausentes por grupo etario. Los extremos (16-17 y 75+) son casi en su totalidad voto optativo.</p>
+<div class='exp' data-title='Ausentes por edad y sexo 2025' data-kind='pyramid'>
 <div class='pyramid'>
 <div class='py-head'><div style='text-align:right'>Mujeres</div><div></div><div>Edad</div><div></div><div>Varones</div></div>
 $pyRows
 </div>
-<div class='pylegend'><span><i class='sw' style='background:var(--c-fem)'></i>Femenino</span><span><i class='sw' style='background:var(--c-masc)'></i>Masculino</span></div>
-<p>El ausentismo se concentra en los adultos jovenes y medios: los grupos de 25 a 34 (2,46 M) y de 35 a 49 (2,39 M) anios son los mas numerosos. Hay un sesgo masculino claro en las edades activas y femenino entre los mayores de 65, reflejo de la mayor longevidad de las mujeres.</p>
+<div class='pylegend'><span><i class='sw' style='background:var(--c-fem)'></i>Femenino</span><span><i class='sw' style='background:var(--c-masc)'></i>Masculino</span></div></div>
+<p>El ausentismo se concentra en los adultos jovenes y medios: los grupos de 25 a 34 (2,46 M) y de 35 a 49 (2,39 M) años son los mas numerosos. Hay un sesgo masculino claro en las edades activas y femenino entre los mayores de 65, reflejo de la mayor longevidad de las mujeres.</p>
 
 <h2><span class='h2n'>03</span>Ranking de provincias</h2>
 <p class='lede'>Tasa de ausentismo (barra clara) y, dentro de ella, la tasa de infraccion efectiva (barra terracota).</p>
+<div class='exp' data-title='Ranking de ausentismo por provincia 2025' data-kind='ranking'>
 <div class='ranklist'>
 <div class='rl-head'><div>Provincia</div><div>Ausentismo (clara) con su infraccion efectiva (terracota)</div></div>
 $rankRows
-</div>
+</div></div>
 <p class='rl-note'><span class='sw' style='background:color-mix(in oklch,var(--c-exento) 38%,var(--paper))'></span><i>Ausentismo total</i> &nbsp; <span class='sw' style='background:var(--c-infractor)'></span><i>Infraccion efectiva</i>. El Centro y el Litoral encabezan la ausencia (Corrientes 39,3%, Misiones 37,8%); el NOA la cierra (Tucuman 20,3%, la mayor participacion del pais).</p>
 
 <h2><span class='h2n'>04</span>Como cambio respecto de 2023</h2>
 <p class='lede'>Tres turnos consecutivos: la general presidencial y el balotaje de 2023, y la legislativa de medio termino de 2025. El arco mide como el tipo de eleccion mueve la participacion.</p>
-<table class='dt cmp-tbl'><thead><tr><th>Indicador</th><th>Generales 2023</th><th>Balotaje 2023</th><th>Legislativas 2025</th></tr></thead><tbody>
+<div class='exp' data-title='Comparacion 2023-2025 indicadores' data-kind='table'><div class='tbl-wrap'><table class='dt cmp-tbl'><thead><tr><th>Indicador</th><th>Generales 2023</th><th>Balotaje 2023</th><th>Legislativas 2025</th></tr></thead><tbody>
 <tr><td>Fecha</td><td>22-oct-2023</td><td>19-nov-2023</td><td>26-oct-2025</td></tr>
 <tr><td>Ausentismo</td><td>21,2% (7,60 M)</td><td>24,3% (8,68 M)</td><td class='up'>30,9% (11,29 M)</td></tr>
 <tr><td>Infraccion (incluye otros)</td><td>13,9% (4,97 M)</td><td>16,7% (5,99 M)</td><td class='up'>22,1% (8,06 M)</td></tr>
 <tr><td>Padron habilitado</td><td>35,78 M</td><td>35,78 M</td><td>36,48 M</td></tr>
-</tbody></table>
+</tbody></table></div></div>
 <p>La participacion cayo en cada turno. El balotaje sumo tres puntos de ausentismo sobre la primera vuelta (cansancio de segunda vuelta), y la legislativa de medio termino 2025 marca el piso, casi diez puntos por encima de la general presidencial. El ausentismo crecio en las 24 provincias sin excepcion.</p>
-<div class='cmp-list'><div class='cmp-head'><div>Provincia</div><div>Ausentismo: generales y balotaje 2023, y legislativas 2025</div><div>&Delta; gen23&rarr;25</div></div>
+<div class='exp' data-title='Ausentismo por provincia 2023 vs 2025' data-kind='cmplist'><div class='cmp-list'><div class='cmp-head'><div>Provincia</div><div>Ausentismo: generales y balotaje 2023, y legislativas 2025</div><div>&Delta; gen23&rarr;25</div></div>
 $cmpRows
-</div>
+</div></div>
 <p class='rl-note'><span class='sw' style='background:color-mix(in oklch,var(--c-masc) 55%,var(--paper))'></span><i>Gen 2023</i> &nbsp; <span class='sw' style='background:var(--c-justif)'></span><i>Balotaje 2023</i> &nbsp; <span class='sw' style='background:var(--c-infractor)'></span><i>Legislativas 2025</i>. La suba (general 2023 a 2025) fue mayor en el Litoral (Corrientes +18,4, Misiones +14,6) y menor en el NOA (Tucuman +3,6, Santiago del Estero +6,8).</p>
 
 <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem;margin:1.8rem 0 .3rem">Totales de ausentes por provincia, cuatro elecciones</h3>
 <p class='lede'>Cantidad de no votantes en cada eleccion. Se excluye 2021 por celebrarse bajo restricciones de la pandemia de COVID-19, que distorsionan la comparacion.</p>
-<div class='tot-wrap'><table class='dt tot-tbl'><thead><tr><th>Provincia</th><th>PASO 2017</th><th>PASO 2019</th><th>Generales 2023</th><th>Legislativas 2025</th></tr></thead><tbody>
+<div class='exp' data-title='Totales de ausentes por provincia (4 elecciones)' data-kind='tottbl'><div class='tot-wrap'><table class='dt tot-tbl'><thead><tr><th>Provincia</th><th>PASO 2017</th><th>PASO 2019</th><th>Generales 2023</th><th>Legislativas 2025</th></tr></thead><tbody>
 $totRows
 $totNat
-</tbody></table></div>
-<p class='rl-note'>Cada celda: tasa de ausentismo sobre el padron de ese anio (arriba) y numero de no votantes (abajo). 2017 y 2019 son PASO; 2023 y 2025, generales.</p>
+</tbody></table></div></div>
+<p class='rl-note'>Cada celda: tasa de ausentismo sobre el padron de ese año (arriba) y numero de no votantes (abajo). 2017 y 2019 son PASO; 2023 y 2025, generales.</p>
 
 <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem;margin:1.8rem 0 .3rem">Tendencia: ausentismo e infraccion</h3>
 <p class='lede'>Evolucion nacional en los cuatro periodos. La infraccion solo se calcula desde 2023: los registros de 2017 y 2019 no traen el motivo de la ausencia.</p>
+<div class='exp' data-title='Tendencia nacional: ausentismo e infraccion' data-kind='attr' data-csv='$lineCsv'>
 <div class='linewrap'>$lineSvg</div>
-<div class='linelegend'><span><i class='ll-a'></i>Ausentismo</span><span><i class='ll-i'></i>Infraccion (incluye otros)</span></div>
+<div class='linelegend'><span><i class='ll-a'></i>Ausentismo</span><span><i class='ll-i'></i>Infraccion (incluye otros)</span></div></div>
 
 <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem;margin:1.8rem 0 .3rem">Quien dejo de votar: edad y sexo</h3>
 <p class='lede'>Ausentes por grupo etario en cada eleccion. La suba no es pareja: se concentra en las edades activas.</p>
-<div class='cmp-list'><div class='cmp-head'><div>Edad</div><div>Ausentes: 2023 frente a 2025</div><div>var.</div></div>
+<div class='exp' data-title='Ausentes por edad 2023 vs 2025' data-kind='cmplist'><div class='cmp-list'><div class='cmp-head'><div>Edad</div><div>Ausentes: 2023 frente a 2025</div><div>var.</div></div>
 $ageCmpRows
-</div>
-<p class='rl-note'>El salto del ausentismo lo explican los adultos de 25 a 49 anios: cada franja sumo cerca de un millon de ausentes mas que en 2023 (+59% y +66%). Los mayores de 75, casi todos voto optativo, apenas variaron (+14%). El sexo se mantuvo estable: los ausentes fueron 47,1% mujeres en 2023 y 47,7% en 2025. La diferencia entre elecciones la marca la edad, no el genero.</p>
+</div></div>
+<p class='rl-note'>El salto del ausentismo lo explican los adultos de 25 a 49 años: cada franja sumo cerca de un millon de ausentes mas que en 2023 (+59% y +66%). Los mayores de 75, casi todos voto optativo, apenas variaron (+14%). El sexo se mantuvo estable: los ausentes fueron 47,1% mujeres en 2023 y 47,7% en 2025. La diferencia entre elecciones la marca la edad, no el genero.</p>
 
 <h2><span class='h2n'>05</span>Provincia por provincia</h2>
 <p class='lede'>Cada ficha: composicion legal de los ausentes, distribucion por edad, sexo de los infractores y los departamentos con mas infractores junto a su tasa local. En orden alfabetico.</p>
@@ -690,10 +759,10 @@ $cards
 <span><i style='background:oklch(0.55 0.17 32)'></i>&ge;35%</span>
 </div>
 <div class='maps'>
-<figure>$map9<figcaption>PASO 2019</figcaption></figure>
-<figure>$mapG<figcaption>Generales 2023</figcaption></figure>
-<figure>$mapB<figcaption>Balotaje 2023</figcaption></figure>
-<figure>$map5<figcaption>Legislativas 2025</figcaption></figure>
+<figure class='exp' data-title='Mapa ausentismo PASO 2019' data-kind='map'>$map9<figcaption>PASO 2019</figcaption></figure>
+<figure class='exp' data-title='Mapa ausentismo Generales 2023' data-kind='map'>$mapG<figcaption>Generales 2023</figcaption></figure>
+<figure class='exp' data-title='Mapa ausentismo Balotaje 2023' data-kind='map'>$mapB<figcaption>Balotaje 2023</figcaption></figure>
+<figure class='exp' data-title='Mapa ausentismo Legislativas 2025' data-kind='map'>$map5<figcaption>Legislativas 2025</figcaption></figure>
 </div>
 <p class='rl-note'>Poligonos provinciales (secciones electorales, WFS oficial mapa2.electoral.gov.ar, disueltos a provincia y simplificados). El cursor sobre una provincia muestra su nombre y tasa.</p>
 
@@ -709,7 +778,9 @@ $cards
 <p class='src'>Elaborado con datos de la Justicia Nacional Electoral. Base analitica reproducible en BigQuery: cp-electoral.INFRACTORES2025.</p>
 </div>
 
-</div></body></html>
+</div>
+$exportJs
+</body></html>
 "@
 $dir="$env:USERPROFILE\ausentismoARG2025"
 $html | Set-Content "$dir\index.html" -Encoding UTF8

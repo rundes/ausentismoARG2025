@@ -72,7 +72,13 @@ Sujeto = ausentismo de los habilitados a votar; el "infractor" es un subconjunto
 - Mapeo distrito: 01 Capital Federal, 02 Buenos Aires, 03 Catamarca, 04 Cordoba, 05 Corrientes, 06 Chaco, 07 Chubut, 08 Entre Rios, 09 Formosa, 10 Jujuy, 11 La Pampa, 12 La Rioja, 13 Mendoza, 14 Misiones, 15 Neuquen, 16 Rio Negro, 17 Salta, 18 San Juan, 19 San Luis, 20 Santa Cruz, 21 Santa Fe, 22 Sgo del Estero, 23 Tucuman, 24 Tierra del Fuego (30 = exterior).
 
 ## Secciones del informe (index.html)
-01 Composicion ausentismo · 02 Edad y sexo (piramide) · 03 Ranking provincias · 04 Comparacion (tabla 3 instancias 2023/2025, barras por provincia, cuadro 4 anios con %, tendencia linea, edad/sexo 2023vs2025) · 05 Provincia por provincia (24 fichas: composicion, edad, sexo, ranking de departamentos) · 06 Mapa (4 mapas de burbujas). Charts = SVG/CSS nativos responsivos (sin imagenes externas).
+01 Composicion ausentismo · 02 Edad y sexo (piramide) · 03 Ranking provincias · 04 Comparacion (tabla 3 instancias 2023/2025, barras por provincia, cuadro 4 anios con %, tendencia linea, edad/sexo 2023vs2025) · 05 Provincia por provincia (24 fichas: composicion, edad, sexo, ranking de departamentos) · 06 Mapa (4 mapas COROPLETICOS: poligonos provinciales reales del WFS oficial mapa2.electoral.gov.ar, disueltos a provincia con shapely y simplificados; paths SVG coloreados por tasa). Charts = SVG/CSS nativos responsivos (sin imagenes externas).
+
+## Export (datos CSV + imagen PNG)
+Cada grafico/mapa/tabla/ficha esta envuelto en `<div class='exp' data-kind=... data-title=...>`. Un `<script>` (variable `$exportJs`, here-string literal `@'...'@`) inyecta una toolbar (botones "datos"/"imagen") via JS. CSV se deriva del DOM por `data-kind` (extractores: table, tottbl, comp, pyramid, ranking, cmplist, map, card, attr); la linea de tendencia trae su `data-csv` JSON precomputado (`$lineCsv`). PNG via libreria `html-to-image` (CDN jsDelivr, render por SVG foreignObject -> soporta oklch). NOTA: el PNG sale en blanco en Chrome headless (quirk de foreignObject) pero funciona en navegador real.
+
+## Tabla de totales: flechas de tendencia
+`TC`/`Arrow` agregan flecha verde (bajo) / roja (subio) con delta en puntos porcentuales vs la eleccion anterior, mas tooltip (title + bubble CSS en `:hover`/`:focus`) para mobile. Tokens `--c-up`/`--c-down`.
 
 ## Archivos locales
 - `C:\Users\santiago\gen_report2.ps1` — generador (fuente de verdad, data embebida).
