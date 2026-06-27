@@ -572,7 +572,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .prose{max-width:68ch}
 h2{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(1.45rem,3.5vw,2rem);line-height:1.15;margin:3.2rem 0 .3rem;letter-spacing:-.01em}
 h2 .h2n{color:var(--c-infractor);font-weight:800;margin-right:.5rem}
-.lede{color:var(--ink2);font-size:1.05rem;margin:.2rem 0 1.4rem;max-width:62ch}
+.lede{color:var(--ink2);font-size:1.05rem;margin:.2rem 0 1.4rem;max-width:68ch}
 p{margin:.9rem 0;max-width:68ch}
 b{font-weight:600}
 .cap{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:.2rem 0 .45rem}
@@ -661,7 +661,7 @@ b{font-weight:600}
 .foot ul{margin:.6rem 0 .6rem 1.1rem}.foot li{margin:.3rem 0}
 .src{font-size:.78rem;color:var(--ink3);margin-top:1rem}
 .tot-wrap,.tbl-wrap{overflow-x:auto;margin:1rem 0}
-.dt.tot-tbl{min-width:560px;border-collapse:collapse;margin-inline:auto}
+.dt.tot-tbl{width:100%;min-width:560px;border-collapse:collapse}
 .dt.tot-tbl th{background:var(--ink);color:var(--paper);padding:.5rem .7rem;text-align:left;font-size:.76rem}
 .dt.tot-tbl th:nth-child(n+2){text-align:right}
 .dt.tot-tbl td{border-bottom:1px solid var(--rule);padding:.4rem .7rem;font-size:.84rem}
@@ -781,7 +781,7 @@ $cmpRows
 
 <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem;margin:1.8rem 0 .3rem">Totales de ausentes por provincia, cuatro elecciones</h3>
 <p class='lede'>Cantidad de no votantes en cada eleccion. Se excluye 2021 por celebrarse bajo restricciones de la pandemia de COVID-19, que distorsionan la comparacion.</p>
-<div class='exp wide' data-title='Totales de ausentes por provincia (4 elecciones)' data-kind='tottbl'><div class='tot-wrap'><table class='dt tot-tbl'><thead><tr><th>Provincia</th><th>PASO 2017</th><th>PASO 2019</th><th>Generales 2023</th><th>Legislativas 2025</th></tr></thead><tbody>
+<div class='exp' data-title='Totales de ausentes por provincia (4 elecciones)' data-kind='tottbl'><div class='tot-wrap'><table class='dt tot-tbl'><thead><tr><th>Provincia</th><th>PASO 2017</th><th>PASO 2019</th><th>Generales 2023</th><th>Legislativas 2025</th></tr></thead><tbody>
 $totRows
 $totNat
 </tbody></table></div></div>
