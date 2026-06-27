@@ -268,16 +268,44 @@ function Arrow($t,$pt,$prevLabel){
 }
 function TC($t,$n,$pt,$prevLabel){ "<td class='tc'><span class='tcl'><b>$($t.ToString('0.0').Replace('.',','))%</b>$(Arrow $t $pt $prevLabel)</span><span class='tcn'>$(F $n)</span></td>" }
 $totRows=''; $s17=0;$s19=0;$s23=0;$s25=0;$e19=0;$p23s=0;$p25s=0
+$serieProv=@{}
 foreach($row in $prov){
   $c=$row.Split('|'); $nm=$c[0]; $k=Norm $nm
   $a17=[double]$h17[$k]; $a19=[double]$h19[$k]; $a23=[double]$cmp23[$k][1]; $a25=[double]$c[2]
   $el=[double]$elec[$k]; $p23=[double]$cmp23[$k][0]; $p25=[double]$c[1]
   $t17=[math]::Round(100*$a17/$el,1); $t19=[math]::Round(100*$a19/$el,1); $t23=[math]::Round(100*$a23/$p23,1); $t25=[math]::Round(100*$a25/$p25,1)
   $s17+=$a17;$s19+=$a19;$s23+=$a23;$s25+=$a25;$e19+=$el;$p23s+=$p23;$p25s+=$p25
+  $serieProv[$nm]=@($t17,$t19,$t23,$t25)
   $totRows+="<tr><td class='lt-d'>$nm</td>$(TC $t17 $a17 $null '')$(TC $t19 $a19 $t17 'PASO 2017')$(TC $t23 $a23 $t19 'PASO 2019')$(TC $t25 $a25 $t23 'Generales 2023')</tr>`n"
 }
 $T17=[math]::Round(100*$s17/$e19,1);$T19=[math]::Round(100*$s19/$e19,1);$T23=[math]::Round(100*$s23/$p23s,1);$T25=[math]::Round(100*$s25/$p25s,1)
 $totNat="<tr class='tot'><td>TOTAL PAIS</td>$(TC $T17 $s17 $null '')$(TC $T19 $s19 $T17 'PASO 2017')$(TC $T23 $s23 $T19 'PASO 2019')$(TC $T25 $s25 $T23 'Generales 2023')</tr>"
+
+# ===== grafico multilinea: 24 provincias, evolucion del ausentismo =====
+$mlW=720.0;$mlH=380.0;$mlPL=42.0;$mlPR=16.0;$mlPT=16.0;$mlPB=34.0
+$ymin=15.0;$ymax=42.0
+$mlXlab=@('2017','2019','2023','2025'); $mlXsub=@('PASO','PASO','Generales','Legisl.')
+function MLX($i){ [math]::Round($mlPL+$i*($mlW-$mlPL-$mlPR)/3.0,1) }
+function MLY($v){ [math]::Round($mlPT+($ymax-$v)/($ymax-$ymin)*($mlH-$mlPT-$mlPB),1) }
+$ml="<svg viewBox='0 0 $mlW $mlH' class='mline' preserveAspectRatio='xMidYMid meet' role='img' xmlns='http://www.w3.org/2000/svg'>"
+foreach($gv in 15,20,25,30,35,40){ $gy=MLY $gv; $ml+="<line x1='$mlPL' x2='$($mlW-$mlPR)' y1='$gy' y2='$gy' stroke='oklch(0.92 0.006 78)' stroke-width='1'/><text x='$($mlPL-6)' y='$($gy+3.5)' text-anchor='end' font-size='10' fill='var(--ink3)'>$gv%</text>" }
+for($i=0;$i -lt 4;$i++){ $xx=MLX $i; $ml+="<text x='$xx' y='$($mlH-14)' text-anchor='middle' font-size='10.5' font-weight='600' fill='var(--ink2)'>$($mlXlab[$i])</text><text x='$xx' y='$($mlH-3)' text-anchor='middle' font-size='8.5' fill='var(--ink3)'>$($mlXsub[$i])</text>" }
+$csvRowsML=@('["Provincia","2017 %","2019 %","2023 %","2025 %"]')
+foreach($nm in ($serieProv.Keys | Sort-Object)){
+  $s=$serieProv[$nm]; $pts=''
+  for($i=0;$i -lt 4;$i++){ $pts+="$(MLX $i),$(MLY $s[$i]) " }
+  $v0=$s[0].ToString('0.0').Replace('.',','); $v1=$s[1].ToString('0.0').Replace('.',','); $v2=$s[2].ToString('0.0').Replace('.',','); $v3=$s[3].ToString('0.0').Replace('.',',')
+  $ml+="<polyline class='pl' points='$pts' fill='none'><title>$nm — 2017 $v0% · 2019 $v1% · 2023 $v2% · 2025 $v3%</title></polyline>"
+  $csvRowsML+=('["'+$nm+'","'+$v0+'","'+$v1+'","'+$v2+'","'+$v3+'"]')
+}
+$natV=@($T17,$T19,$T23,$T25); $natPts=''
+for($i=0;$i -lt 4;$i++){ $natPts+="$(MLX $i),$(MLY $natV[$i]) " }
+$ml+="<polyline class='pl-nat' points='$natPts' fill='none'><title>Promedio nacional</title></polyline>"
+for($i=0;$i -lt 4;$i++){ $ml+="<circle cx='$(MLX $i)' cy='$(MLY $natV[$i])' r='2.6' fill='var(--ink)'/>" }
+$ml+="</svg>"
+$multiLine=$ml
+$csvRowsML+=('["TOTAL PAIS","'+$T17.ToString('0.0').Replace('.',',')+'","'+$T19.ToString('0.0').Replace('.',',')+'","'+$T23.ToString('0.0').Replace('.',',')+'","'+$T25.ToString('0.0').Replace('.',',')+'"]')
+$mlCsv='['+($csvRowsML -join ',')+']'
 
 # ===== comparacion edad 2023 vs 2025 =====
 $age25aus=@(604166,1614346,2457547,2394935,1359613,1001813,1845349)
@@ -371,7 +399,7 @@ $code2name=@{'01'='Capital Federal';'02'='Buenos Aires';'03'='Catamarca';'04'='C
 $geo=@{}; foreach($l in $geoRaw){ $x=$l.Split('|'); $geo[$x[0]]=@([double]$x[1],[double]$x[2],[double]$x[3]) }
 $b25=@{}; foreach($row in $base){ $c=$row.Split('|'); $b25[(Norm $c[0])]=@([double]$c[1],[double]$c[2]) }
 # rates por codigo
-$rG=@{};$rB=@{};$r5=@{};$r9=@{}
+$rG=@{};$rB=@{};$r5=@{};$r9=@{};$r17=@{}
 foreach($code in $code2name.Keys){
   $nm=$code2name[$code]; $k=Norm $nm
   $pad23=[double]$cmp23[$k][0]; $a23=[double]$cmp23[$k][1]; $ab=[double]$bal[$k]; $elec=[double]$geo[$code][2]
@@ -379,6 +407,7 @@ foreach($code in $code2name.Keys){
   $rB[$code]=[math]::Round(100*$ab/$pad23,1)
   $r5[$code]=[math]::Round(100*$b25[$k][1]/$b25[$k][0],1)
   $a19=[double]$h19[$k]; $r9[$code]=[math]::Round(100*$a19/$elec,1)
+  $a17m=[double]$h17[$k]; $r17[$code]=[math]::Round(100*$a17m/$elec,1)
 }
 function ColorFor($v){ if($v -lt 15){'oklch(0.93 0.025 60)'}elseif($v -lt 20){'oklch(0.86 0.055 52)'}elseif($v -lt 25){'oklch(0.79 0.09 46)'}elseif($v -lt 30){'oklch(0.71 0.125 40)'}elseif($v -lt 35){'oklch(0.63 0.15 35)'}else{'oklch(0.55 0.17 32)'} }
 $geoPathsRaw = @'
@@ -440,7 +469,7 @@ function BuildMap($rates){
   }
   $svg+"</svg>"
 }
-$mapG=BuildMap $rG; $mapB=BuildMap $rB; $map5=BuildMap $r5; $map9=BuildMap $r9
+$mapG=BuildMap $rG; $mapB=BuildMap $rB; $map5=BuildMap $r5; $map9=BuildMap $r9; $map7=BuildMap $r17
 
 # ===== grafico de linea: tendencia nacional 4 periodos =====
 $au=@($T17,$T19,$T23,$T25)
@@ -471,8 +500,28 @@ $lineCsv='['+($lineCsvRows -join ',')+']'
 $exportJs = @'
 <script>
 (function(){
-  var H=null;
-  function lib(){return H||(H=new Promise(function(res,rej){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js';s.onload=function(){res(window.htmlToImage)};s.onerror=function(){rej(new Error('cdn'))};document.head.appendChild(s)}))}
+  var _css=null;
+  function pageCss(){if(_css===null){_css='';document.querySelectorAll('style').forEach(function(s){_css+=s.textContent})}return _css}
+  function toPng(el){
+    var rect=el.getBoundingClientRect();
+    var tbl=el.querySelector('table');
+    var w=Math.ceil(Math.max(rect.width, el.scrollWidth, tbl?tbl.scrollWidth:0));
+    var h=Math.ceil(Math.max(rect.height, el.scrollHeight));
+    var clone=el.cloneNode(true);
+    clone.querySelectorAll('.exp-tools').forEach(function(n){n.remove()});
+    clone.querySelectorAll('.tot-wrap,.tbl-wrap').forEach(function(n){n.style.overflow='visible'});
+    var paper=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()||'#fff';
+    var xhtml=new XMLSerializer().serializeToString(clone);
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="background:'+paper+';width:'+w+'px;padding:0;margin:0"><style>'+pageCss()+'</style>'+xhtml+'</div></foreignObject></svg>';
+    var url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    return new Promise(function(res,rej){
+      var img=new Image();
+      var to=setTimeout(function(){rej(new Error('timeout'))},12000);
+      img.onload=function(){clearTimeout(to);var sc=2;var c=document.createElement('canvas');c.width=w*sc;c.height=h*sc;var cx=c.getContext('2d');cx.scale(sc,sc);cx.drawImage(img,0,0,w,h);c.toBlob(function(b){b?res(b):rej(new Error('toBlob'))},'image/png')};
+      img.onerror=function(){clearTimeout(to);rej(new Error('imgload'))};
+      img.src=url;
+    });
+  }
   function txt(n){return n?n.textContent.replace(/\s+/g,' ').trim():''}
   function slug(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||'export'}
   function save(name,blob){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1500)}
@@ -490,7 +539,7 @@ $exportJs = @'
     attr:function(el){return JSON.parse(el.getAttribute('data-csv'))}
   };
   function doCsv(el){var kind=el.getAttribute('data-kind');var title=el.getAttribute('data-title')||'datos';try{var rows=EX[kind](el);save(slug(title)+'.csv',new Blob([toCsv(rows)],{type:'text/csv;charset=utf-8'}))}catch(e){console.error(e);alert('No se pudieron extraer los datos de este elemento')}}
-  function doPng(el,btn){var title=el.getAttribute('data-title')||'grafico';btn.disabled=true;var old=btn.textContent;btn.textContent='...';var paper=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()||'#fff';lib().then(function(h){return h.toBlob(el,{pixelRatio:2,backgroundColor:paper,filter:function(n){return !(n.classList&&n.classList.contains('exp-tools'))}})}).then(function(b){save(slug(title)+'.png',b)}).catch(function(e){console.error(e);alert('No se pudo generar la imagen (revisa la conexion)')}).then(function(){btn.disabled=false;btn.textContent=old})}
+  function doPng(el,btn){var title=el.getAttribute('data-title')||'grafico';btn.disabled=true;var old=btn.textContent;btn.textContent='...';toPng(el).then(function(b){save(slug(title)+'.png',b)}).catch(function(e){console.error(e);alert('No se pudo generar la imagen')}).then(function(){btn.disabled=false;btn.textContent=old})}
   document.querySelectorAll('.exp').forEach(function(el){
     if(el.querySelector(':scope>.exp-tools'))return;
     var bar=document.createElement('div');bar.className='exp-tools';
@@ -512,11 +561,14 @@ $html = @"
 :root{
 --paper:oklch(0.99 0.005 85);--paper2:oklch(0.975 0.006 80);--ink:oklch(0.26 0.02 60);--ink2:oklch(0.46 0.015 65);--ink3:oklch(0.62 0.012 70);--rule:oklch(0.9 0.008 75);--rule2:oklch(0.94 0.006 78);
 --c-infractor:oklch(0.56 0.16 32);--c-exento:oklch(0.62 0.085 230);--c-justif:oklch(0.74 0.11 78);--c-otros:oklch(0.74 0.02 80);--c-fem:oklch(0.64 0.13 8);--c-masc:oklch(0.56 0.085 245);--c-up:oklch(0.55 0.17 28);--c-down:oklch(0.52 0.13 150);
---maxw:1040px}
+--maxw:1080px;--col:760px}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;font-size:clamp(15px,.5vw+14px,17px);-webkit-font-smoothing:antialiased}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(16px,4vw,40px) 80px}
+/* sistema de anchos armonizado: columna estandar para todo, alineada a la izquierda; .wide rompe a ancho completo */
+.wrap>*{max-width:var(--col)}
+.wrap>.wide{max-width:var(--maxw)}
 .prose{max-width:68ch}
 h2{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(1.45rem,3.5vw,2rem);line-height:1.15;margin:3.2rem 0 .3rem;letter-spacing:-.01em}
 h2 .h2n{color:var(--c-infractor);font-weight:800;margin-right:.5rem}
@@ -621,17 +673,21 @@ b{font-weight:600}
 .trend{font-style:normal;font-size:.64rem;font-weight:700;font-variant-numeric:tabular-nums;cursor:default;outline:none}
 .trend.up{color:var(--c-up)}.trend.down{color:var(--c-down)}
 .trend[data-tip]:hover::after,.trend[data-tip]:focus::after{content:attr(data-tip);position:absolute;top:130%;right:.4rem;background:var(--ink);color:var(--paper);font-size:.7rem;font-weight:400;letter-spacing:0;padding:.32rem .55rem;border-radius:6px;white-space:nowrap;z-index:8;box-shadow:0 6px 16px oklch(0 0 0/.2);pointer-events:none}
-.linewrap{margin:.8rem 0;max-width:580px}.linewrap svg{width:100%;height:auto}
+.linewrap{margin:.8rem 0}.linewrap svg{width:100%;height:auto;max-height:300px;display:block}
+.mlinewrap{margin:.6rem 0}.mline{width:100%;height:auto;max-height:440px;display:block}
+.pl{stroke:oklch(0.72 0.015 70 / .42);stroke-width:.9;fill:none;transition:stroke .12s ease-out,stroke-width .12s ease-out}
+.pl:hover{stroke:var(--c-infractor);stroke-width:2.4}
+.pl-nat{stroke:var(--ink);stroke-width:2.6;fill:none}
 .linelegend{display:flex;gap:1.4rem;font-size:.85rem;margin:.3rem 0 0}
 .linelegend i{display:inline-block;width:20px;height:0;border-top:3px solid;vertical-align:middle;margin-right:.4rem}
 .linelegend .ll-a{border-color:oklch(0.4 0.02 250)}.linelegend .ll-i{border-top-style:dashed;border-color:var(--c-infractor)}
-.maps{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1rem 0}
+.maps{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin:1rem 0}
 .maps figure{margin:0;text-align:center}.maps svg{width:100%;height:auto;max-height:430px;display:block;overflow:hidden}
 .maps figcaption{font-size:.82rem;font-weight:600;color:var(--ink2);margin-top:.3rem}
 .mapleg{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.78rem;margin:.6rem 0;color:var(--ink2)}
 .mapleg span{display:flex;align-items:center;gap:.35rem}.mapleg i{width:.85rem;height:.85rem;border-radius:2px;display:inline-block;border:1px solid oklch(0.85 0.01 70)}
 @media(max-width:720px){.maps{grid-template-columns:repeat(2,1fr)}}
-.dt.cmp-tbl{max-width:660px;width:100%;min-width:460px;margin-inline:auto}
+.dt.cmp-tbl{width:100%;min-width:460px}
 .dt.cmp-tbl{border-collapse:collapse}.dt.cmp-tbl th{background:var(--ink);color:var(--paper);padding:.5rem .7rem;text-align:left;font-size:.78rem}.dt.cmp-tbl td{border-bottom:1px solid var(--rule);padding:.45rem .7rem;font-variant-numeric:tabular-nums}.dt.cmp-tbl td.up{color:var(--c-infractor);font-weight:700}
 .cmp-list{margin:1.1rem 0;display:grid;gap:.45rem}
 .cmp-head{display:grid;grid-template-columns:minmax(110px,1fr) 2.6fr auto;gap:.8rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
@@ -655,13 +711,13 @@ b{font-weight:600}
 }
 @media print{body{font-size:11px}.prov{box-shadow:none}.cover{padding-top:0}a{color:inherit}.exp-tools{display:none}}
 .exp{position:relative}
-.exp-tools{position:absolute;top:.35rem;right:.35rem;display:flex;gap:.3rem;opacity:0;transition:opacity .18s cubic-bezier(.22,1,.36,1);z-index:7}
+.exp-tools{position:absolute;top:0;right:.35rem;transform:translateY(calc(-100% - .3rem));display:flex;gap:.3rem;opacity:0;transition:opacity .18s cubic-bezier(.22,1,.36,1);z-index:7}
 .exp:hover>.exp-tools,.exp:focus-within>.exp-tools{opacity:1}
 .exp-tools button{font-family:inherit;font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);background:color-mix(in oklch,var(--paper) 88%,transparent);backdrop-filter:blur(3px);border:1px solid var(--rule);border-radius:6px;padding:.24rem .5rem;cursor:pointer;line-height:1.1}
 .exp-tools button:hover{color:var(--paper);background:var(--ink);border-color:var(--ink)}
 .exp-tools button:disabled{opacity:.5;cursor:progress}
 @media(max-width:720px){.exp-tools{opacity:.55}}
-.prov.exp>.exp-tools{top:.5rem;right:.5rem}
+.prov.exp>.exp-tools{top:0;right:.5rem}
 </style></head>
 <body><div class='wrap'>
 
@@ -725,7 +781,7 @@ $cmpRows
 
 <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem;margin:1.8rem 0 .3rem">Totales de ausentes por provincia, cuatro elecciones</h3>
 <p class='lede'>Cantidad de no votantes en cada eleccion. Se excluye 2021 por celebrarse bajo restricciones de la pandemia de COVID-19, que distorsionan la comparacion.</p>
-<div class='exp' data-title='Totales de ausentes por provincia (4 elecciones)' data-kind='tottbl'><div class='tot-wrap'><table class='dt tot-tbl'><thead><tr><th>Provincia</th><th>PASO 2017</th><th>PASO 2019</th><th>Generales 2023</th><th>Legislativas 2025</th></tr></thead><tbody>
+<div class='exp wide' data-title='Totales de ausentes por provincia (4 elecciones)' data-kind='tottbl'><div class='tot-wrap'><table class='dt tot-tbl'><thead><tr><th>Provincia</th><th>PASO 2017</th><th>PASO 2019</th><th>Generales 2023</th><th>Legislativas 2025</th></tr></thead><tbody>
 $totRows
 $totNat
 </tbody></table></div></div>
@@ -745,6 +801,11 @@ $ageCmpRows
 <p class='rl-note'>El salto del ausentismo lo explican los adultos de 25 a 49 años: cada franja sumo cerca de un millon de ausentes mas que en 2023 (+59% y +66%). Los mayores de 75, casi todos voto optativo, apenas variaron (+14%). El sexo se mantuvo estable: los ausentes fueron 47,1% mujeres en 2023 y 47,7% en 2025. La diferencia entre elecciones la marca la edad, no el genero.</p>
 
 <h2><span class='h2n'>05</span>Provincia por provincia</h2>
+<p class='lede'>Evolucion del ausentismo en cada provincia a lo largo de las cuatro elecciones con datos comparables. Cada linea gris es una provincia (paselo el cursor por encima para resaltarla); la linea oscura es el promedio nacional.</p>
+<div class='exp wide' data-title='Evolucion del ausentismo por provincia 2017-2025' data-kind='attr' data-csv='$mlCsv'>
+<div class='mlinewrap'>$multiLine</div>
+</div>
+<p class='rl-note'>Tasa de ausentismo (no votantes sobre el padron) por provincia. 2017 y 2019 son PASO; 2023, generales; 2025, legislativas. El salto general de 2023 a 2025 se ve como el ascenso final de casi todas las lineas.</p>
 <p class='lede'>Cada ficha: composicion legal de los ausentes, distribucion por edad, sexo de los infractores y los departamentos con mas infractores junto a su tasa local. En orden alfabetico.</p>
 $cards
 
@@ -758,7 +819,8 @@ $cards
 <span><i style='background:oklch(0.63 0.15 35)'></i>30 a 35</span>
 <span><i style='background:oklch(0.55 0.17 32)'></i>&ge;35%</span>
 </div>
-<div class='maps'>
+<div class='maps wide'>
+<figure class='exp' data-title='Mapa ausentismo PASO 2017' data-kind='map'>$map7<figcaption>PASO 2017</figcaption></figure>
 <figure class='exp' data-title='Mapa ausentismo PASO 2019' data-kind='map'>$map9<figcaption>PASO 2019</figcaption></figure>
 <figure class='exp' data-title='Mapa ausentismo Generales 2023' data-kind='map'>$mapG<figcaption>Generales 2023</figcaption></figure>
 <figure class='exp' data-title='Mapa ausentismo Balotaje 2023' data-kind='map'>$mapB<figcaption>Balotaje 2023</figcaption></figure>
