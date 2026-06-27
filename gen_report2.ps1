@@ -547,6 +547,33 @@ $exportJs = @'
     var bp=document.createElement('button');bp.type='button';bp.textContent='imagen';bp.title='Descargar imagen (PNG)';bp.addEventListener('click',function(){doPng(el,bp)});
     bar.appendChild(bc);bar.appendChild(bp);el.insertBefore(bar,el.firstChild);
   });
+  // ===== picker lateral: destacar provincias en el grafico de lineas =====
+  document.querySelectorAll('.mline-layout').forEach(function(layout){
+    var svg=layout.querySelector('.mline');var picker=layout.querySelector('.prov-picker');
+    if(!svg||!picker)return;
+    var PAL=['oklch(0.55 0.17 30)','oklch(0.5 0.12 250)','oklch(0.55 0.13 152)','oklch(0.62 0.14 65)','oklch(0.5 0.15 320)','oklch(0.52 0.1 210)','oklch(0.58 0.15 130)','oklch(0.48 0.14 12)'];
+    var pins={},used={},lines={};
+    function prev(p,on){if(on){p.style.stroke='var(--ink)';p.style.strokeWidth='2.4';p.parentNode.appendChild(p);}else{p.style.stroke='';p.style.strokeWidth='';}}
+    function freeColor(){for(var i=0;i<PAL.length;i++){if(!used[PAL[i]])return PAL[i];}return PAL[Object.keys(pins).length%PAL.length];}
+    function toggle(nm,b){var p=lines[nm];if(!p)return;
+      if(pins[nm]){used[pins[nm]]=false;delete pins[nm];b.classList.remove('on');b.querySelector('.pp-sw').style.background='';p.style.stroke='';p.style.strokeWidth='';}
+      else{var c=freeColor();used[c]=true;pins[nm]=c;b.classList.add('on');b.querySelector('.pp-sw').style.background=c;p.style.stroke=c;p.style.strokeWidth='2.6';p.parentNode.appendChild(p);}
+      svg.classList.toggle('has-sel',Object.keys(pins).length>0);}
+    var head=document.createElement('div');head.className='pp-head';head.textContent='Toca para destacar';picker.appendChild(head);
+    svg.querySelectorAll('.pl').forEach(function(p){
+      var t=p.querySelector('title');if(!t)return;
+      var raw=t.textContent;var nm=raw.split('—')[0].trim();if(!nm)return;
+      lines[nm]=p;
+      var mv=raw.match(/2025\s+([0-9.,]+%)/);var v25=mv?mv[1]:'';
+      var b=document.createElement('button');b.type='button';b.className='pp-item';b.setAttribute('data-prov',nm);
+      b.innerHTML="<span class='pp-sw'></span><span class='pp-nm'></span><span class='pp-v'></span>";
+      b.querySelector('.pp-nm').textContent=nm;b.querySelector('.pp-v').textContent=v25;
+      picker.appendChild(b);
+      b.addEventListener('click',function(){toggle(nm,b)});
+      b.addEventListener('mouseenter',function(){if(!pins[nm])prev(p,true)});
+      b.addEventListener('mouseleave',function(){if(!pins[nm])prev(p,false)});
+    });
+  });
 })();
 </script>
 '@
@@ -678,6 +705,18 @@ b{font-weight:600}
 .pl{stroke:oklch(0.72 0.015 70 / .42);stroke-width:.9;fill:none;transition:stroke .12s ease-out,stroke-width .12s ease-out}
 .pl:hover{stroke:var(--c-infractor);stroke-width:2.4}
 .pl-nat{stroke:var(--ink);stroke-width:2.6;fill:none}
+.mline-layout{display:flex;gap:1rem;align-items:flex-start}
+.mline-layout>.mlinewrap{flex:1;min-width:0}
+.prov-picker{flex:none;width:188px;max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:1px;border:1px solid var(--rule);border-radius:8px;padding:.3rem}
+.pp-head{font-size:.64rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);padding:.15rem .35rem .3rem}
+.pp-item{display:flex;align-items:center;gap:.4rem;width:100%;text-align:left;background:none;border:0;border-radius:5px;padding:.24rem .35rem;cursor:pointer;font-family:inherit;font-size:.74rem;color:var(--ink2);line-height:1.15}
+.pp-item:hover{background:var(--paper2)}
+.pp-item.on{background:var(--paper2);color:var(--ink);font-weight:600}
+.pp-sw{width:.72rem;height:.72rem;border-radius:2px;flex:none;border:1px solid var(--rule);background:transparent}
+.pp-nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-v{color:var(--ink3);font-variant-numeric:tabular-nums;font-size:.7rem}
+.mline.has-sel .pl{stroke:oklch(0.8 0.012 70 / .22)}
+@media(max-width:720px){.mline-layout{flex-direction:column}.prov-picker{width:100%;max-height:none;flex-direction:row;flex-wrap:wrap;gap:.3rem}.pp-item{width:auto}.pp-head{width:100%}.pp-v{display:none}}
 .linelegend{display:flex;gap:1.4rem;font-size:.85rem;margin:.3rem 0 0}
 .linelegend i{display:inline-block;width:20px;height:0;border-top:3px solid;vertical-align:middle;margin-right:.4rem}
 .linelegend .ll-a{border-color:oklch(0.4 0.02 250)}.linelegend .ll-i{border-top-style:dashed;border-color:var(--c-infractor)}
@@ -801,9 +840,9 @@ $ageCmpRows
 <p class='rl-note'>El salto del ausentismo lo explican los adultos de 25 a 49 años: cada franja sumo cerca de un millon de ausentes mas que en 2023 (+59% y +66%). Los mayores de 75, casi todos voto optativo, apenas variaron (+14%). El sexo se mantuvo estable: los ausentes fueron 47,1% mujeres en 2023 y 47,7% en 2025. La diferencia entre elecciones la marca la edad, no el genero.</p>
 
 <h2><span class='h2n'>05</span>Provincia por provincia</h2>
-<p class='lede'>Evolucion del ausentismo en cada provincia a lo largo de las cuatro elecciones con datos comparables. Cada linea gris es una provincia (paselo el cursor por encima para resaltarla); la linea oscura es el promedio nacional.</p>
+<p class='lede'>Evolucion del ausentismo en cada provincia a lo largo de las cuatro elecciones con datos comparables. Cada linea gris es una provincia (paselo el cursor por encima, o use la lista lateral para fijar y comparar varias); la linea oscura es el promedio nacional.</p>
 <div class='exp wide' data-title='Evolucion del ausentismo por provincia 2017-2025' data-kind='attr' data-csv='$mlCsv'>
-<div class='mlinewrap'>$multiLine</div>
+<div class='mline-layout'><div class='mlinewrap'>$multiLine</div><div class='prov-picker' role='group' aria-label='Destacar provincia'></div></div>
 </div>
 <p class='rl-note'>Tasa de ausentismo (no votantes sobre el padron) por provincia. 2017 y 2019 son PASO; 2023, generales; 2025, legislativas. El salto general de 2023 a 2025 se ve como el ascenso final de casi todas las lineas.</p>
 <p class='lede'>Cada ficha: composicion legal de los ausentes, distribucion por edad, sexo de los infractores y los departamentos con mas infractores junto a su tasa local. En orden alfabetico.</p>
